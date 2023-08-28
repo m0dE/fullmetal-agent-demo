@@ -51,3 +51,9 @@ To run just type:
 ```
 npm start
 ```
+
+
+## Credits
+[Llama.cpp](https://github.com/ggerganov/llama.cpp.git) by Denis Spasyuk
+
+
