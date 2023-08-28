@@ -40,13 +40,14 @@ cd fullmetal-agent-example
 npm install
 ```
 
-Download the file from https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGML/resolve/main/Wizard-Vicuna-7B-Uncensored.ggmlv3.q5_1.bin and save it in the root folder
+Download a LLM file and save it in the root folder. 
+For example, you can use https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGML/resolve/main/Wizard-Vicuna-7B-Uncensored.ggmlv3.q5_1.bin
 
-Open config.js and change path to llama.cpp main file, and the model name/path
+Open config.js and change the path to llama.cpp main file, and the model name/path
 
 
 ## Usage
-To run just type:
+To run, just type:
 
 ```
 npm start
