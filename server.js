@@ -1,10 +1,5 @@
-//Installation
-// git clone https://github.com/ggerganov/llama.cpp.git
-// cd llama.cpp
-// sed -i 's/export NVCCFLAGS="-arch=native"/export NVCCFLAGS="-arch=all"/' llama.cpp/Makefile
-// make clean && LLAMA_CUBLAS=1 make  -j
-//Copyright Denis Spasyuk
-//License MIT
+// Copyright Fullmetal.AI
+// License MIT
 
 const { spawn } = require('child_process');
 const config = require('./config.js');
