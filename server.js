@@ -1,14 +1,16 @@
-// Copyright Fullmetal.AI
-// License MIT
+//Installation
+// git clone https://github.com/ggerganov/llama.cpp.git
+// cd llama.cpp
+// sed -i 's/export NVCCFLAGS="-arch=native"/export NVCCFLAGS="-arch=all"/' llama.cpp/Makefile
+// make clean && LLAMA_CUBLAS=1 make  -j
+//Copyright Denis Spasyuk
+//License MIT
 
 const { spawn } = require('child_process');
 const config = require('./config.js');
 const Fullmetal = require('fullmetal-agent');
 let tokenLength = 0;
 const fullMetalConfig = {
-  headers: {
-    lucidApiKey: 'sk-lucid-api-key',
-  },
   name: 'Uncensored Agent',
 };
 const fullmetalAgent = new Fullmetal(fullMetalConfig);
