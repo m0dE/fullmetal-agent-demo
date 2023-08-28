@@ -20,7 +20,7 @@ make clean && LLAMA_CUBLAS=1 make -j
 
 3. Clone fullmetal-uncensored-agent-demo
    
-git clone https://github.com/shaileshminsnapsys/fullmetal-uncensored-agent-demo
+git clone [https://github.com/shaileshminsnapsys/fullmetal-uncensored-agent-demo](https://github.com/m0dE/fullmetal-agent-example)
 
 4. Install the project and set your configuration parameters
   
