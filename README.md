@@ -15,7 +15,7 @@ The main workflow this application is as following:
 git clone https://github.com/ggerganov/llama.cpp.git
 ```
 
-2. Build Lllama.cpp with GPU support
+2. Build Llama.cpp with GPU support
 
 ```
 cd llama.cpp
