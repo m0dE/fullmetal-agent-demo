@@ -1,8 +1,12 @@
-# llcui small llama.ccp wrapper for Node.js
+# FuLLMetal Agent Example
 
-**Note: This project is a work in progress.**
+This project provides a Fullmetal Agent written in Node.js that interacts with Fullmetal API.
 
-This project provides a Node.js server for a chat user interface (UI) that interacts with the Llama.cpp library. It allows users to communicate with the Llama.cpp application via a web-based chat interface.
+The main workflow this application is as following:
+1. Register itself to Fullmetal API
+2. Receive prompts from Fullmetal API
+3. Generate a response to the received prompts using LLM running locally
+4. Send the response to Fullmetal API
 
 ## Installation
 
@@ -21,23 +25,25 @@ sed -i 's/-arch=native/-arch=all/g' Makefile
 make clean && LLAMA_CUBLAS=1 make -j
 ```
 
-3. Clone fullmetal-uncensored-agent-demo
-```   
+3. Clone this repo in a separate folder
+```
+cd ..
+
 git clone https://github.com/m0dE/fullmetal-agent-example
 ```
+
 4. Install the project and set your configuration parameters
 
 ```
-cd fullmetal-uncensored-agent-demo
-```
+cd fullmetal-agent-example
 
-Download the file from https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGML/resolve/main/Wizard-Vicuna-7B-Uncensored.ggmlv3.q5_1.bin and save it in root folder
-
-```
 npm install
 ```
 
+Download the file from https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGML/resolve/main/Wizard-Vicuna-7B-Uncensored.ggmlv3.q5_1.bin and save it in the root folder
+
 Open config.js and change path to llama.cpp main file, and the model name/path
+
 
 ## Usage
 To run just type:
