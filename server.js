@@ -30,7 +30,7 @@ const getApiResponse = async (input, cb) => {
     msg = msg.toString('utf-8');
     if (msg && !msg.includes(input)) {
       tokenLength += msg.length;
-      cb(msg, false);
+      cb(msg);
     }
   });
 
