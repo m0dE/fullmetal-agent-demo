@@ -1,23 +1,19 @@
-//Installation
-// git clone https://github.com/ggerganov/llama.cpp.git
-// cd llama.cpp
-// sed -i 's/export NVCCFLAGS="-arch=native"/export NVCCFLAGS="-arch=all"/' llama.cpp/Makefile
-// make clean && LLAMA_CUBLAS=1 make  -j
-//Copyright Denis Spasyuk
-//License MIT
-
 const { spawn } = require('child_process');
 const config = require('./config.js');
 const Fullmetal = require('fullmetal-agent');
 let tokenLength = 0;
-const fullMetalConfig = {
-  name: 'Uncensored Agent',
+const config = {   
+    model: "TheBloke/Llama-2-7B-fp16", // full name provided in hugging face including the creator's name
+    name: "my 30B LLM", // Optional. This name will be registered in api.fullmetal.ai
+    contextLength: 30, // context length in thousands. 30 here is 30k.
+    acceptPublicPrompts: true // answer public prompts and earn mystery gems
 };
-const fullmetalAgent = new Fullmetal(fullMetalConfig);
+const fullmetalAgent = new Fullmetal(config);
 fullmetalAgent.setApiKey('sample-key');
+
 fullmetalAgent.onPrompt(async (prompt) => {
-  await getApiResponse(prompt, async (answer, completed) => {
-    fullmetalAgent.sendResponse(answer, completed);
+  await getApiResponse(prompt, async (response, completed) => {
+    fullmetalAgent.sendResponse(response, completed);
   });
 });
 
