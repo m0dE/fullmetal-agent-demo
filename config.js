@@ -5,7 +5,7 @@ config.params = [
   '-m',
   'Wizard-Vicuna-7B-Uncensored.ggmlv3.q5_1.bin',
   '-ngl',
-  '32',
+  '28',
   '-n',
   '512',
 ];
