@@ -46,8 +46,47 @@ For example, you can use https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncens
 ```
 wget https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGML/resolve/main/Wizard-Vicuna-7B-Uncensored.ggmlv3.q5_1.bin
 ```
+<br />
 
-Open config.js and change the path to llama.cpp main file, and the model name/path
+5. Obtain your ```FULLMETAL_API_KEY``` by following instructions mentioned [here](https://fullmetal.gitbook.io/docs/how-to-obtain-api-key)
+<br /><br />
+
+6. Open ```config.js``` and change the path to llama.cpp main file, and the model name/path. You can adjust the parameter value as per your requirement
+```
+config.params = [
+  '-m',
+  'Wizard-Vicuna-7B-Uncensored.ggmlv3.q5_1.bin',
+  '-ngl',
+  '28',
+  '-n',
+  '512',
+];
+config.llamacpp = '../llama.cpp/main';
+```
+
+7. Create ```.env``` and add following key
+```
+FULLMETAL_API_KEY=YOUR_FULLMETAL_API_KEY
+```
+
+8. Open ```server.js``` file and change the following object with your values
+```
+const modelList = [
+  {
+    name: 'MODEL_NAME',
+    file: 'MODEL_FILE.bin',
+  },
+];
+
+const fullMetalConfig = {
+  ...
+  name: 'YOUR UNIQUE AGENT NAME',
+  apiKey: process.env.FULLMETAL_API_KEY,
+  ...
+};
+```
+
+
 
 
 ## Usage

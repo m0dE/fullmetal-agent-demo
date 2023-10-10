@@ -1,6 +1,7 @@
 const { spawn } = require('child_process');
 const config = require('./config.js');
 const Fullmetal = require('fullmetal-agent');
+require('dotenv').config();
 let tokenLength = 0;
 
 const modelList = [
@@ -12,7 +13,7 @@ const modelList = [
 
 const fullMetalConfig = {
   name: 'Agent001',
-  apiKey: 'sample-key',
+  apiKey: process.env.FULLMETAL_API_KEY,
   models: modelList.map((m) => m.name),
 };
 

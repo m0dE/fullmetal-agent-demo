@@ -11,6 +11,7 @@
   "description": "",
   "dependencies": {
     "nodemon": "^3.0.1",
-    "fullmetal-agent": "^1.0.2"
+    "fullmetal-agent": "^1.0.2",
+    "dotenv": "^16.3.1"
   }
 }
