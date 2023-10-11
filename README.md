@@ -52,15 +52,14 @@ wget https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGML/resolve/ma
 <br /><br />
 
 6. Open ```config.js``` and change the path to llama.cpp main file, and the model name/path. You can adjust the parameter value as per your requirement
+
 ```
-config.params = [
-  '-m',
-  'Wizard-Vicuna-7B-Uncensored.ggmlv3.q5_1.bin',
-  '-ngl',
-  '28',
-  '-n',
-  '512',
-];
+config.llamaConfig = {
+  name: 'TheBloke/Wizard-Vicuna-7B-Uncensored.ggmlv3.q5_1', // model name
+  m: 'Wizard-Vicuna-7B-Uncensored.ggmlv3.q5_1.bin', // model path (default: Wizard-Vicuna-7B-Uncensored.ggmlv3.q5_1.bin)
+  ngl: '28', //   -ngl N, --n-gpu-layers N number of layers to store in VRAM
+  n: 512, //   -n N, --n-predict N   number of tokens to predict (default: -1, -1 = infinity, -2 = until context filled)
+};
 config.llamacpp = '../llama.cpp/main';
 ```
 
@@ -71,13 +70,6 @@ FULLMETAL_API_KEY=YOUR_FULLMETAL_API_KEY
 
 8. Open ```server.js``` file and change the following object with your values
 ```
-const modelList = [
-  {
-    name: 'MODEL_NAME',
-    file: 'MODEL_FILE.bin',
-  },
-];
-
 const fullMetalConfig = {
   ...
   name: 'YOUR UNIQUE AGENT NAME',

@@ -6,8 +6,8 @@ let tokenLength = 0;
 
 const modelList = [
   {
-    name: 'TheBloke/Wizard-Vicuna-7B-Uncensored.ggmlv3.q5_1',
-    file: 'Wizard-Vicuna-7B-Uncensored.ggmlv3.q5_1.bin',
+    name: config.llamaConfig.name,
+    file: config.llamaConfig.m,
   },
 ];
 
@@ -37,6 +37,7 @@ const findMatchingIndexes = (query, models) => {
 };
 
 const getApiResponse = async (data, cb) => {
+  console.log(data.prompt);
   const startTime = Date.now();
   tokenLength = 0;
   let modelFileUsed, modelNameUsed;
@@ -56,19 +57,16 @@ const getApiResponse = async (data, cb) => {
     modelNameUsed = modelList[0].name;
   }
 
-  config.params[1] = modelFileUsed;
-
-  const response = spawn(config.llamacpp, [
-    ...config.params,
-    '-p',
-    `${data.prompt}`,
-  ]);
+  config.llamaConfig.m = modelFileUsed;
+  const params = config.convertObjectToArray(config.llamaConfig);
+  const response = spawn(config.llamacpp, [...params, '-p', `${data.prompt}`]);
 
   response.stdout.on('data', (msg) => {
     msg = msg.toString('utf-8');
     if (msg && !msg.includes(data.prompt)) {
       tokenLength += msg.length;
       cb({ token: msg });
+      console.log({ token: msg });
     }
   });
 
@@ -87,7 +85,7 @@ const getApiResponse = async (data, cb) => {
       speed: tokensPerSecond.toFixed(2),
     });
 
-    console.log(`nGPU: ${config.params[3]}`);
+    console.log(`nGPU: ${config.llamaConfig.ngl}`);
     console.log(`Total time taken: ${elapsedTimeInSeconds}`);
     console.log(`Tokens Per Second: ${tokensPerSecond.toFixed(2)}`);
   });
