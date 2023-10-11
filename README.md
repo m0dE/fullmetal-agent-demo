@@ -18,6 +18,18 @@ git clone https://github.com/ggerganov/llama.cpp.git
 2. Build Llama.cpp with GPU support
 
 ```
+sudo apt update
+
+sudo apt install build-essential
+
+sudo apt install nvidia-cuda-toolkit nvidia-cuda-toolkit-gcc
+
+nvcc --version
+
+gcc --version
+
+g++ --version
+
 cd llama.cpp
 
 sed -i 's/-arch=native/-arch=all/g' Makefile
