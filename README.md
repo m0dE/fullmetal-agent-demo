@@ -13,6 +13,32 @@ The main workflow this application is as following:
 1. Setup llama.cpp
 ```
 git clone https://github.com/ggerganov/llama.cpp.git
+
+cd llama.cpp
+```
+
+### Continuing GGML File (RECOMMENDED)
+- Latest llama.cpp doesn't support ggml now. Please refer the following link
+https://huggingface.co/TheBloke/Llama-2-13B-chat-GGML/discussions/14#64e5bc015af55fb4d1f9b61d
+
+- Execute following command in order to use older version of llama.cpp and use ggml file
+```
+git reset --hard dadbed99e65252d79f81101a392d0d6497b86caa
+```
+
+### Using GGUF file with the latest code (BETA)
+To  use the latest code we need the model to be in gguf format. Please follow the instructions below 
+
+- You will need ```python3``` and the ```numpy``` libraries. 
+- You can install numpy using 
+```
+pip3 install numpy    
+```
+- Convert your ggml file with gguf by executing following command
+```
+cd llama.cpp    
+
+./convert-llama-ggml-to-gguf.py --eps 1e-5 -i GGML.bin file -o ./models/Wizard-Vicuna-7B-Uncensored.ggmlv3.q5_1.bin   
 ```
 
 2. Build Llama.cpp with GPU support
@@ -30,12 +56,21 @@ gcc --version
 
 g++ --version
 
-cd llama.cpp
-
 sed -i 's/-arch=native/-arch=all/g' Makefile
 
+```
+
+- With GPU support
+```
 make clean && LLAMA_CUBLAS=1 make -j
 ```
+
+- Without GPU support
+```
+make clean && make -j
+```
+
+<br />
 
 3. Clone this repo in a separate folder
 ```
