@@ -4,7 +4,7 @@ var config = {};
 
 config.llamaConfig = {
   name: 'TheBloke/Wizard-Vicuna-7B-Uncensored.ggmlv3.q5_1', // model name
-  m: 'Wizard-Vicuna-7B-Uncensored.ggmlv3.q5_1.bin', // model path (default: Wizard-Vicuna-7B-Uncensored.ggmlv3.q5_1.bin)
+  m: './models/Wizard-Vicuna-7B-Uncensored.ggmlv3.q5_1.bin', // model path (default: Wizard-Vicuna-7B-Uncensored.ggmlv3.q5_1.bin)
   ngl: '28', //   -ngl N, --n-gpu-layers N number of layers to store in VRAM
   n: 512, //   -n N, --n-predict N   number of tokens to predict (default: -1, -1 = infinity, -2 = until context filled)
 };
