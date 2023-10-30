@@ -87,10 +87,12 @@ cd fullmetal-agent-example
 npm install
 ```
 
-Download a LLM file and save it in the root folder. 
+Download a LLM file and save it in the models folder. 
 For example, you can use https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGML/resolve/main/Wizard-Vicuna-7B-Uncensored.ggmlv3.q5_1.bin
 
 ```
+mkdir models
+
 wget https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGML/resolve/main/Wizard-Vicuna-7B-Uncensored.ggmlv3.q5_1.bin
 ```
 <br />
