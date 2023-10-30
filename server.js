@@ -92,6 +92,8 @@ if (!fs.existsSync(config.llamaConfig.m)) {
         model: modelNameUsed,
         elapsedTime: elapsedTimeInSeconds.toFixed(2),
         speed: tokensPerSecond.toFixed(2),
+        promptLength: data.prompt.length,
+        responseLength: tokenLength,
       });
 
       console.log(`nGPU: ${config.llamaConfig.ngl}`);
