@@ -93,6 +93,8 @@ For example, you can use https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncens
 ```
 mkdir models
 
+cd models
+
 wget https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGML/resolve/main/Wizard-Vicuna-7B-Uncensored.ggmlv3.q5_1.bin
 ```
 <br />
