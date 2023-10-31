@@ -1,15 +1,17 @@
 //Copyright Shailesh Mishra
 //License MIT
-var config = {};
+
+require('dotenv').config();
+let config = {};
 
 config.llamaConfig = {
-  name: 'TheBloke/Wizard-Vicuna-7B-Uncensored.ggmlv3.q5_1', // model name
-  m: './models/Wizard-Vicuna-7B-Uncensored.ggmlv3.q5_1.bin', // model path (default: Wizard-Vicuna-7B-Uncensored.ggmlv3.q5_1.bin)
-  ngl: '28', //   -ngl N, --n-gpu-layers N number of layers to store in VRAM
-  n: 512, //   -n N, --n-predict N   number of tokens to predict (default: -1, -1 = infinity, -2 = until context filled)
+  name: process.env.MODEL_NAME, // model name
+  m: process.env.MODEL_FILE, // model path (default: Wizard-Vicuna-7B-Uncensored.ggmlv3.q5_1.bin)
+  ngl: process.env.NGL, //   -ngl N, --n-gpu-layers N number of layers to store in VRAM
+  n: process.env.PREDICT, //   -n N, --n-predict N   number of tokens to predict (default: -1, -1 = infinity, -2 = until context filled)
 };
 
-config.llamacpp = '../llama.cpp/main';
+config.llamacpp = process.env.LLAMA_CPP_PATH;
 
 config.convertObjectToArray = (obj) => {
   let result = [];

@@ -17,7 +17,7 @@ if (!fs.existsSync(config.llamaConfig.m)) {
   ];
 
   const fullMetalConfig = {
-    name: 'Agent001',
+    name: process.env.AGENT_NAME,
     apiKey: process.env.FULLMETAL_API_KEY,
     models: modelList.map((m) => m.name),
   };

@@ -102,34 +102,25 @@ wget https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGML/resolve/ma
 5. Obtain your ```FULLMETAL_API_KEY``` by following instructions mentioned [here](https://fullmetal.gitbook.io/docs/how-to-obtain-api-key)
 <br /><br />
 
-6. Open ```config.js``` and change the path to llama.cpp main file, and the model name/path. You can adjust the parameter value as per your requirement
-
-```
-config.llamaConfig = {
-  name: 'TheBloke/Wizard-Vicuna-7B-Uncensored.ggmlv3.q5_1', // model name
-  m: 'Wizard-Vicuna-7B-Uncensored.ggmlv3.q5_1.bin', // model path (default: Wizard-Vicuna-7B-Uncensored.ggmlv3.q5_1.bin)
-  ngl: '28', //   -ngl N, --n-gpu-layers N number of layers to store in VRAM
-  n: 512, //   -n N, --n-predict N   number of tokens to predict (default: -1, -1 = infinity, -2 = until context filled)
-};
-config.llamacpp = '../llama.cpp/main';
-```
-
-7. Create ```.env``` and add following key
+6. Create ```.env``` and add the following keys. Remember all these keys are important. If left blank then your agent may not work properly.
 ```
 FULLMETAL_API_KEY=YOUR_FULLMETAL_API_KEY
-```
 
-8. Open ```server.js``` file and change the following object with your values
-```
-const fullMetalConfig = {
-  ...
-  name: 'YOUR UNIQUE AGENT NAME',
-  apiKey: process.env.FULLMETAL_API_KEY,
-  ...
-};
-```
+#AGENT NAME
+AGENT_NAME=
 
+#MODEL INFORMATION
+MODEL_NAME=
+MODEL_FILE=
 
+# -ngl N, --n-gpu-layers N number of layers to store in VRAM
+NGL=28
+# -n N, --n-predict N   number of tokens to predict (default: -1, -1 = infinity, -2 = until context filled)
+PREDICT=512
+
+# Path to llama.cpp folder main file (e.g: ../llama.cpp/main)
+LLAMA_CPP_PATH=
+```
 
 
 ## Usage
