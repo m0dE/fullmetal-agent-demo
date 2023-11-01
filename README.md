@@ -102,7 +102,7 @@ wget https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGML/resolve/ma
 5. Obtain your ```FULLMETAL_API_KEY``` by following instructions mentioned [here](https://fullmetal.gitbook.io/docs/how-to-obtain-api-key)
 <br /><br />
 
-6. Create ```.env``` and add the following keys. Remember all these keys are important. If left blank then your agent may not work properly.
+6. Create ```.env``` file in root folder and add the following keys. Remember all these keys are important. If left blank then your agent may not work properly.
 ```
 FULLMETAL_API_KEY=YOUR_FULLMETAL_API_KEY
 
