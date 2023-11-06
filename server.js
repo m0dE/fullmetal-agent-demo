@@ -5,7 +5,7 @@ const fs = require('fs');
 require('dotenv').config();
 
 if (!fs.existsSync(config.llamaConfig.m)) {
-  console.log(`${config.llamaConfig.m} does not exists`);
+  console.log(`${config.llamaConfig.m} does not exist`);
 } else {
   let tokenLength = 0;
 
