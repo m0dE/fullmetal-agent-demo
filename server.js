@@ -20,6 +20,7 @@ if (!fs.existsSync(config.llamaConfig.m)) {
     name: process.env.AGENT_NAME,
     apiKey: process.env.FULLMETAL_API_KEY,
     models: modelList.map((m) => m.name),
+    isPublic: true
   };
 
   const fullmetalAgent = new Fullmetal(fullMetalConfig);
