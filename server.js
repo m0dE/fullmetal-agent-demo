@@ -43,7 +43,7 @@ if (!fs.existsSync(config.llamaConfig.m)) {
   };
 
   const getApiResponse = async (data, cb) => {
-    console.log(data.prompt);
+    // console.log(data.prompt);
     const startTime = Date.now();
     tokenLength = 0;
     let modelFileUsed, modelNameUsed;
@@ -76,7 +76,7 @@ if (!fs.existsSync(config.llamaConfig.m)) {
       if (msg && !msg.includes(data.prompt)) {
         tokenLength += msg.length;
         cb({ token: msg });
-        console.log({ token: msg });
+        // console.log({ token: msg });
       }
     });
 
