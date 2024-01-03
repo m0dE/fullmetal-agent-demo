@@ -10,76 +10,12 @@ The main workflow this application is as following:
 
 ## Installation
 
-1. Setup llama.cpp
+1. Clone the following repository
 ```
-git clone https://github.com/ggerganov/llama.cpp.git
-
-cd llama.cpp
-```
-
-### Continuing GGML File (RECOMMENDED)
-- Latest llama.cpp doesn't support ggml now. Please refer the following link
-https://huggingface.co/TheBloke/Llama-2-13B-chat-GGML/discussions/14#64e5bc015af55fb4d1f9b61d
-
-- Execute following command in order to use older version of llama.cpp and use ggml file
-```
-git reset --hard dadbed99e65252d79f81101a392d0d6497b86caa
-```
-
-### Using GGUF file with the latest code (BETA)
-To  use the latest code we need the model to be in gguf format. Please follow the instructions below 
-
-- You will need ```python3``` and the ```numpy``` libraries. 
-- You can install numpy using 
-```
-pip3 install numpy    
-```
-- Convert your ggml file with gguf by executing following command
-```
-cd llama.cpp    
-
-./convert-llama-ggml-to-gguf.py --eps 1e-5 -i GGML.bin file -o ./models/Wizard-Vicuna-7B-Uncensored.ggmlv3.q5_1.bin   
-```
-
-2. Build Llama.cpp with GPU support
-
-```
-sudo apt update
-
-sudo apt install build-essential
-
-sudo apt install nvidia-cuda-toolkit nvidia-cuda-toolkit-gcc
-
-nvcc --version
-
-gcc --version
-
-g++ --version
-
-sed -i 's/-arch=native/-arch=all/g' Makefile
-
-```
-
-- With GPU support
-```
-make clean && LLAMA_CUBLAS=1 make -j
-```
-
-- Without GPU support
-```
-make clean && make -j
-```
-
-<br />
-
-3. Clone this repo in a separate folder
-```
-cd ..
-
 git clone https://github.com/m0dE/fullmetal-agent-example
 ```
 
-4. Install the project and set your configuration parameters
+2. Install the project and set your configuration parameters
 
 ```
 cd fullmetal-agent-example
@@ -87,15 +23,15 @@ cd fullmetal-agent-example
 npm install
 ```
 
-Download a LLM file and save it in the models folder. 
-For example, you can use https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGML/resolve/main/Wizard-Vicuna-7B-Uncensored.ggmlv3.q5_1.bin
+Download a GGUF LLM file and save it in the models folder. 
+For example, you can use https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGUF/resolve/main/Wizard-Vicuna-7B-Uncensored.Q2_K.gguf
 
 ```
 mkdir models
 
 cd models
 
-wget https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGML/resolve/main/Wizard-Vicuna-7B-Uncensored.ggmlv3.q5_1.bin
+wget https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGUF/resolve/main/Wizard-Vicuna-7B-Uncensored.Q2_K.gguf
 ```
 <br />
 
@@ -115,11 +51,6 @@ MODEL_FILE=
 
 # -ngl N, --n-gpu-layers N number of layers to store in VRAM
 NGL=28
-# -n N, --n-predict N   number of tokens to predict (default: -1, -1 = infinity, -2 = until context filled)
-PREDICT=512
-
-# Path to llama.cpp folder main file (e.g: ../llama.cpp/main)
-LLAMA_CPP_PATH=
 ```
 
 
@@ -129,9 +60,3 @@ To run, type:
 ```
 npm start
 ```
-
-
-## Credits
-[Llama.cpp](https://github.com/ggerganov/llama.cpp.git) by Denis Spasyuk
-
-
