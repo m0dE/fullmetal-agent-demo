@@ -10,9 +10,9 @@ if (!fs.existsSync(process.env.MODEL_FILE)) {
 
   const model = new LlamaModel({
     modelPath: process.env.MODEL_FILE,
-    //gpuLayers: parseInt(process.env.NGL),
-    gpuLayers: 250000,
+    gpuLayers: parseInt(process.env.NGL),
   });
+
   const fullMetalConfig = {
     name: process.env.AGENT_NAME,
     apiKey: process.env.FULLMETAL_API_KEY,

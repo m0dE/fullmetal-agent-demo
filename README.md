@@ -23,6 +23,11 @@ cd fullmetal-agent-example
 npm install
 ```
 
+__CUDA SUPPORT__
+```
+npx --no node-llama-cpp download --cuda
+```
+
 Download a GGUF LLM file and save it in the models folder. 
 For example, you can use https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGUF/resolve/main/Wizard-Vicuna-7B-Uncensored.Q2_K.gguf
 
