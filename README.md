@@ -24,6 +24,8 @@ npm install
 ```
 
 __CUDA SUPPORT__
+
+Please make sure you have latest cmake version
 ```
 npx --no node-llama-cpp download --cuda
 ```
