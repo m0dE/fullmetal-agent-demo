@@ -23,9 +23,35 @@ cd fullmetal-agent-example
 npm install
 ```
 
-__CUDA SUPPORT__
+3. Obtain your ```FULLMETAL_API_KEY``` by following instructions mentioned [here](https://fullmetal.gitbook.io/docs/how-to-obtain-api-key)
+<br /><br />
 
-Please make sure you have latest cmake version
+4. Create ```.env``` file in root folder and add the following keys. Remember all these keys are important. If left blank then your agent may not work properly.
+```
+FULLMETAL_API_KEY=YOUR_FULLMETAL_API_KEY
+
+#AGENT NAME
+AGENT_NAME=
+
+#MODEL INFORMATION
+MODEL_NAME=
+MODEL_FILE=
+
+# -ngl N, --n-gpu-layers N number of layers to store in VRAM
+NGL=28
+```
+
+
+## CUDA SUPPORT
+
+Please make sure you have `build-essentials` installed on your machine.
+<br />To install `build-essentials`
+	
+```
+yum groupinstall "Development Tools"
+```
+
+To build node-llama-cpp with CUDA support please run this command inside of your project:
 ```
 npx --no node-llama-cpp download --cuda
 ```
@@ -41,25 +67,6 @@ cd models
 wget https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGUF/resolve/main/Wizard-Vicuna-7B-Uncensored.Q2_K.gguf
 ```
 <br />
-
-5. Obtain your ```FULLMETAL_API_KEY``` by following instructions mentioned [here](https://fullmetal.gitbook.io/docs/how-to-obtain-api-key)
-<br /><br />
-
-6. Create ```.env``` file in root folder and add the following keys. Remember all these keys are important. If left blank then your agent may not work properly.
-```
-FULLMETAL_API_KEY=YOUR_FULLMETAL_API_KEY
-
-#AGENT NAME
-AGENT_NAME=
-
-#MODEL INFORMATION
-MODEL_NAME=
-MODEL_FILE=
-
-# -ngl N, --n-gpu-layers N number of layers to store in VRAM
-NGL=28
-```
-
 
 ## Usage
 To run, type:

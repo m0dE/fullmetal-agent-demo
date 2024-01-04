@@ -1,3 +1,4 @@
 node_modules/
 .env
 models/*.bin
+models/*.gguf
