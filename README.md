@@ -40,7 +40,17 @@ MODEL_FILE=
 # -ngl N, --n-gpu-layers N number of layers to store in VRAM
 NGL=28
 ```
+Download a GGUF LLM file and save it in the models folder. 
+For example, you can use https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGUF/resolve/main/Wizard-Vicuna-7B-Uncensored.Q2_K.gguf
 
+```
+mkdir models
+
+cd models
+
+wget https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGUF/resolve/main/Wizard-Vicuna-7B-Uncensored.Q2_K.gguf
+```
+<br />
 
 ## CUDA SUPPORT
 
@@ -55,18 +65,6 @@ To build node-llama-cpp with CUDA support please run this command inside of your
 ```
 npx --no node-llama-cpp download --cuda
 ```
-
-Download a GGUF LLM file and save it in the models folder. 
-For example, you can use https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGUF/resolve/main/Wizard-Vicuna-7B-Uncensored.Q2_K.gguf
-
-```
-mkdir models
-
-cd models
-
-wget https://huggingface.co/TheBloke/Wizard-Vicuna-7B-Uncensored-GGUF/resolve/main/Wizard-Vicuna-7B-Uncensored.Q2_K.gguf
-```
-<br />
 
 ## Usage
 To run, type:
