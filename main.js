@@ -97,18 +97,31 @@ if (!fs.existsSync(process.env.MODEL_FILE)) {
   });
 
   /**
-   * Splits the prompt into smaller chunks if it exceeds the model's token limit.
+   * Splits the prompt into smaller chunks based on a character limit.
    * @param {string} prompt - The input prompt to split.
-   * @param {object} tokenizer - The LLaMA tokenizer.
-   * @param {number} maxTokens - Maximum tokens allowed per chunk.
+   * @param {number} maxChars - Maximum characters allowed per chunk.
    * @returns {string[]} Array of prompt chunks.
    */
-  const chunkPrompt = (prompt, tokenizer, maxTokens) => {
-    const tokens = tokenizer.tokenize(prompt);
+  const chunkPrompt = (prompt, maxChars) => {
     const chunks = [];
-    for (let i = 0; i < tokens.length; i += maxTokens) {
-      chunks.push(tokenizer.detokenize(tokens.slice(i, i + maxTokens)));
+    let currentChunk = '';
+    
+    // Split prompt into smaller chunks
+    for (let i = 0; i < prompt.length; i++) {
+      currentChunk += prompt[i];
+
+      // When we exceed the maxChars limit, push the current chunk and reset
+      if (currentChunk.length >= maxChars) {
+        chunks.push(currentChunk);
+        currentChunk = '';
+      }
     }
+
+    // Push any remaining content
+    if (currentChunk.length > 0) {
+      chunks.push(currentChunk);
+    }
+
     return chunks;
   };
 
@@ -121,15 +134,14 @@ if (!fs.existsSync(process.env.MODEL_FILE)) {
     try {
       const context = new LlamaContext({ model });
       const session = new LlamaChatSession({ context });
-      const tokenizer = context.getTokenizer();
       const startTime = Date.now();
-      const MAX_TOKENS = 2048; // Token limit for each chunk
+      const MAX_CHARS = 1500; // Character limit for each chunk (rough estimate of tokens)
 
       let tokenLength = 0;
       let contextString = ''; // Accumulated context
 
-      // Split the prompt into chunks
-      const promptChunks = chunkPrompt(data.prompt, tokenizer, MAX_TOKENS);
+      // Split the prompt into chunks based on the character limit
+      const promptChunks = chunkPrompt(data.prompt, MAX_CHARS);
 
       // Process each chunk one by one
       for (const chunk of promptChunks) {
