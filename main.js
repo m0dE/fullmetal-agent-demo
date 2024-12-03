@@ -3,6 +3,8 @@ import Fullmetal from 'fullmetal-agent';
 import fs from 'fs';
 import 'dotenv/config';
 
+const modelTemplate = `${process.env.MODEL_TEMPLATE}`;
+
 if (!fs.existsSync(process.env.MODEL_FILE)) {
   console.log(`${process.env.MODEL_FILE} does not exist`);
 } else {
@@ -34,8 +36,9 @@ if (!fs.existsSync(process.env.MODEL_FILE)) {
       const session = new LlamaChatSession({ context });
       const startTime = Date.now();
       let tokenLength = 0;
+      let userPrompt = modelTemplate.replace('{prompt}', data.prompt);
 
-      await session.prompt(`${data.prompt}`, {
+      await session.prompt(`${userPrompt}`, {
         onToken(chunk) {
           tokenLength += chunk.length;
           cb({ token: context.decode(chunk) });
