@@ -36,8 +36,9 @@ if (!fs.existsSync(process.env.MODEL_FILE)) {
       const session = new LlamaChatSession({ context });
       const startTime = Date.now();
       let tokenLength = 0;
-      let userPrompt = modelTemplate.replace('{prompt}', data.prompt);
-
+      let userPrompt = modelTemplate
+        .replace('{prompt}', data.prompt)
+        .replace('{system_prompt}', data.options.sysPrompt);
       await session.prompt(`${userPrompt}`, {
         onToken(chunk) {
           tokenLength += chunk.length;
