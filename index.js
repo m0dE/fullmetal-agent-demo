@@ -87,7 +87,7 @@ if (!fs.existsSync(process.env.MODEL_FILE)) {
     });
     const results = await collection.query({
       queryEmbeddings: [queryEmbedding.data], // Query embeddings
-      nResults: 50, // Number of results to return
+      nResults: 10, // Number of results to return
     });
     console.debug("Context retrieved:", results.documents); // Log retrieved documents
     return results.documents.flat().join("\n"); // Return the documents as a single string
