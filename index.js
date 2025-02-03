@@ -1,9 +1,9 @@
-import { LlamaModel, LlamaContext, LlamaChatSession } from "node-llama-cpp"; // Importing necessary classes for Llama model interaction
+import { LlamaModel, LlamaContext, LlamaChatSession } from "node-llama-cpp"; // Importing Llama model and context classes
 import Fullmetal from "fullmetal-agent"; // Importing Fullmetal agent for handling prompts
 import { pipeline } from "@xenova/transformers"; // Importing pipeline for feature extraction
-import { ChromaClient } from "chromadb"; // Importing ChromaClient for managing knowledge base
+import { ChromaClient } from "chromadb"; // Importing Chroma client for database operations
 import fs from "fs"; // Importing file system module for file operations
-import "dotenv/config"; // Importing environment variables from .env file
+import "dotenv/config"; // Loading environment variables from .env file
 
 // Template for the model prompt
 const modelTemplate = `${process.env.MODEL_TEMPLATE}`;
@@ -14,25 +14,27 @@ const embedder = await pipeline(
   "Xenova/all-MiniLM-L6-v2"
 );
 
-// Creating a new Chroma client for knowledge base management
+// Creating a new Chroma client instance
 const chroma = new ChromaClient();
+
+// Getting or creating a collection in Chroma database
 const collection = await chroma.getOrCreateCollection({
-  name: process.env.CHROMA_COLLECTION, // Name of the knowledge base collection
+  name: process.env.CHROMA_COLLECTION,
 });
 
 // Checking if the model file exists
 if (!fs.existsSync(process.env.MODEL_FILE)) {
-  console.log(`${process.env.MODEL_FILE} does not exist`); // Log if the model file is missing
+  console.log(`${process.env.MODEL_FILE} does not exist`); // Log if the model file does not exist
 } else {
-  console.log(`${process.env.MODEL_FILE} exists`); // Log if the model file is found
+  console.log(`${process.env.MODEL_FILE} exists`); // Log if the model file exists
 
-  // Initializing the Llama model with specified parameters
+  // Initializing the Llama model with configuration
   const model = new LlamaModel({
     modelPath: process.env.MODEL_FILE, // Path to the model file
     gpuLayers: parseInt(process.env.NGL, 10), // Number of GPU layers
     contextSize: 8192, // Size of the context
     threads: 12, // Number of threads to use
-    temperature: 0.6, // Temperature for response variability
+    temperature: 0.6, // Temperature for randomness in responses
     seed: 3407, // Seed for random number generation
   });
 
@@ -45,17 +47,17 @@ if (!fs.existsSync(process.env.MODEL_FILE)) {
   // Configuration for the Fullmetal agent
   const fullMetalConfig = {
     name: process.env.AGENT_NAME, // Name of the agent
-    apiKey: process.env.FULLMETAL_API_KEY, // API key for authentication
-    models: [process.env.MODEL_NAME], // List of models to use
-    isPublic: true, // Public access flag
-    restartOnDisconnect: true, // Restart on disconnection flag
+    apiKey: process.env.FULLMETAL_API_KEY, // API key for Fullmetal
+    models: [process.env.MODEL_NAME], // Models to be used by the agent
+    isPublic: true, // Whether the agent is public
+    restartOnDisconnect: true, // Restart the agent on disconnect
   };
 
   // Creating a new Fullmetal agent instance
   const fullmetalAgent = new Fullmetal(fullMetalConfig);
   console.debug("Fullmetal agent created with config:", fullMetalConfig);
 
-  // Setting up the prompt handler for the Fullmetal agent
+  // Handling incoming prompts
   fullmetalAgent.onPrompt(async (data) => {
     console.debug("Received prompt data:", data); // Log received prompt data
     await getApiResponse(data, async (response) => {
@@ -63,67 +65,92 @@ if (!fs.existsSync(process.env.MODEL_FILE)) {
     });
   });
 
-  // Function to store knowledge into the vector database
+  // Function to add text to the knowledge base
   const addToKnowledgeBase = async (text, id) => {
-    console.debug("Adding to knowledge base:", { text, id }); // Log the addition of knowledge
+    console.debug("Adding to knowledge base:", { text, id }); // Log the text being added
     const embedding = await embedder(text, {
-      pooling: "mean", // Pooling method for embeddings
+      pooling: "mean", // Use mean pooling for embeddings
       normalize: true, // Normalize the embeddings
     });
+    // Add the embedding and document to the collection
     await collection.add({
-      ids: [id], // Unique identifier for the entry
-      embeddings: [embedding.data], // Embedding data
-      documents: [text], // Original text
+      ids: [id],
+      embeddings: [embedding.data],
+      documents: [text],
     });
     console.debug("Knowledge base updated with ID:", id); // Log successful update
   };
 
-  // Function to retrieve relevant knowledge based on a query
+  // Function to retrieve context based on a query
   const retrieveContext = async (query) => {
     console.debug("Retrieving context for query:", query); // Log the query being processed
     const queryEmbedding = await embedder(query, {
-      pooling: "mean", // Pooling method for query embeddings
-      normalize: true, // Normalize the query embeddings
+      pooling: "mean", // Use mean pooling for the query embedding
+      normalize: true, // Normalize the query embedding
     });
+    // Query the collection for relevant documents
     const results = await collection.query({
-      queryEmbeddings: [queryEmbedding.data], // Query embeddings
+      queryEmbeddings: [queryEmbedding.data],
       nResults: 10, // Number of results to return
     });
     console.debug("Context retrieved:", results.documents); // Log retrieved documents
     return results.documents.flat().join("\n"); // Return the documents as a single string
   };
 
-  // Function to generate API response with RAT
+  // Function to summarize retrieved context to reduce token usage
+  const summarizeText = async (text) => {
+    const context = new LlamaContext({ model }); // Create a new context for the model
+    const session = new LlamaChatSession({ context }); // Create a new chat session
+
+    let summary = ""; // Initialize summary variable
+    // Prompt the model to summarize the text
+    await session.prompt(`Summarize this knowledge concisely:\n\n${text}`, {
+      stop: ["<｜User｜>", "<｜End｜>", "User:", "Assistant:"], // Stop tokens for the prompt
+      onToken(chunk) {
+        summary += context.decode(chunk); // Decode and append each chunk to the summary
+      },
+    });
+
+    return summary.trim(); // Return the trimmed summary
+  };
+
+  // Function to generate API response based on incoming data
   const getApiResponse = async (data, cb) => {
     try {
       console.debug("Generating API response for data:", data); // Log the data being processed
 
-      const retrievedContext = await retrieveContext(data.prompt); // Retrieve context for the prompt
-      const augmentedPrompt = `Context:\n${retrievedContext}\n\nUser Prompt:\n${data.prompt}`; // Create an augmented prompt
+      // Retrieve and summarize context for the user's prompt
+      let retrievedContext = await retrieveContext(data.prompt);
+      retrievedContext = await summarizeText(retrievedContext); // Summarize before passing to model
 
-      const context = new LlamaContext({ model }); // Create a new context for the Llama model
+      // Create an augmented prompt with context and user prompt
+      const augmentedPrompt = `Context:\n${retrievedContext}\n\nUser Prompt:\n${data.prompt}`;
+
+      const context = new LlamaContext({ model }); // Create a new context for the model
       const session = new LlamaChatSession({ context }); // Create a new chat session
 
       const startTime = Date.now(); // Start time for performance measurement
       let tokenLength = 0; // Initialize token length counter
+      // Prepare the user prompt for the model
       let userPrompt = modelTemplate
-        .replace("{prompt}", augmentedPrompt) // Replace placeholder with the augmented prompt
-        .replace("{system_prompt}", data.options.sysPrompt); // Replace system prompt placeholder
+        .replace("{prompt}", augmentedPrompt)
+        .replace("{system_prompt}", data.options.sysPrompt);
 
-      console.log("User prompt sent to model:", userPrompt); // Log the user prompt being sent
-      let responseMessage = ""; // Initialize response message
+      console.log("User prompt sent to model:", userPrompt); // Log the user prompt
+      let responseMessage = ""; // Initialize response message variable
 
-      // Send the prompt to the model and handle token responses
+      // Send the user prompt to the model and handle the response
       await session.prompt(userPrompt, {
-        stop: ["<｜User｜>", "<｜End｜>", "User:", "Assistant:"], // Define stop sequences
+        stop: ["<｜User｜>", "<｜End｜>", "User:", "Assistant:"], // Stop tokens for the prompt
         onToken(chunk) {
-          tokenLength += chunk.length; // Update token length
-          responseMessage += context.decode(chunk); // Decode and append the chunk to the response message
+          tokenLength += chunk.length; // Count the length of each chunk
+          responseMessage += context.decode(chunk); // Decode and append each chunk to the response message
         },
       });
+
       const endTime = Date.now(); // End time for performance measurement
-      const elapsedTimeInSeconds = (endTime - startTime) / 1000; // Calculate elapsed time in seconds
-      const tokensPerSecond = tokenLength / elapsedTimeInSeconds; // Calculate tokens processed per second
+      const elapsedTimeInSeconds = (endTime - startTime) / 1000; // Calculate elapsed time
+      const tokensPerSecond = tokenLength / elapsedTimeInSeconds; // Calculate tokens per second
       let cleanedResponseMessage, thinkContent; // Initialize variables for cleaned response and think content
 
       // Check if the response contains think content
@@ -136,51 +163,47 @@ if (!fs.existsSync(process.env.MODEL_FILE)) {
       }
 
       // Clean up the response message
-      cleanedResponseMessage = cleanedResponseMessage.replace(/undefined/g, ""); // Remove undefined values
-      thinkContent = thinkContent.replace(/undefined/g, ""); // Remove undefined values
+      cleanedResponseMessage = cleanedResponseMessage.replace(/undefined/g, "");
+      thinkContent = thinkContent.replace(/undefined/g, "");
 
       console.log("Cleaned response message:", cleanedResponseMessage); // Log cleaned response message
       console.log("Think content:", thinkContent); // Log think content
+      // Callback with the response data
       cb({
-        token: cleanedResponseMessage, // Return cleaned response
-        reasoning: thinkContent, // Return think content
-        completed: true, // Mark as completed
-        model: process.env.MODEL_NAME, // Return model name
-        elapsedTime: elapsedTimeInSeconds.toFixed(2), // Return elapsed time
-        speed: tokensPerSecond.toFixed(2), // Return processing speed
-        promptLength: data.prompt.length, // Return length of the prompt
-        responseLength: tokenLength, // Return length of the response
+        token: cleanedResponseMessage,
+        reasoning: thinkContent,
+        completed: true,
+        model: process.env.MODEL_NAME,
+        elapsedTime: elapsedTimeInSeconds.toFixed(2), // Elapsed time in seconds
+        speed: tokensPerSecond.toFixed(2), // Speed in tokens per second
+        promptLength: data.prompt.length, // Length of the user prompt
+        responseLength: tokenLength, // Length of the response
       });
 
-      console.log(`nGPU: ${process.env.NGL}`); // Log number of GPU layers
+      console.log(`nGPU: ${process.env.NGL}`); // Log number of GPUs used
       console.log(`Total time taken: ${elapsedTimeInSeconds}`); // Log total time taken
-      console.log(`Tokens Per Second: ${tokensPerSecond.toFixed(2)}`); // Log tokens processed per second
+      console.log(`Tokens Per Second: ${tokensPerSecond.toFixed(2)}`); // Log tokens per second
 
-      // Log the model response being stored in the knowledge base for debugging purposes
       console.debug(
         "Storing model response into knowledge base:",
-        responseMessage
+        responseMessage // Log the response being stored
       );
-
-      // Log the user prompt being stored in the knowledge base for debugging purposes
       console.debug(
         "Storing new user prompt in the knowledge base:",
-        data.prompt
+        data.prompt // Log the user prompt being stored
       );
 
-      // Add the user prompt to the knowledge base with a unique identifier based on the current timestamp
+      // Add the user prompt and model response to the knowledge base
       await addToKnowledgeBase(data.prompt, `prompt-${Date.now()}`);
-      console.debug("User prompt stored successfully."); // Confirm successful storage of user prompt
+      console.debug("User prompt stored successfully."); // Log successful storage of user prompt
 
-      // Add the cleaned model response to the knowledge base with a unique identifier based on the current timestamp
       await addToKnowledgeBase(
         cleanedResponseMessage,
         `response-${Date.now()}`
       );
-      console.debug("Model response stored successfully."); // Confirm successful storage of model response
+      console.debug("Model response stored successfully."); // Log successful storage of model response
     } catch (e) {
-      // Log any errors that occur during the process
-      console.error("Error in getApiResponse:", e);
+      console.error("Error in getApiResponse:", e); // Log any errors that occur
     }
   };
 }
