@@ -32,7 +32,7 @@ if (!fs.existsSync(process.env.MODEL_FILE)) {
   const model = new LlamaModel({
     modelPath: process.env.MODEL_FILE, // Path to the model file
     gpuLayers: parseInt(process.env.NGL, 10), // Number of GPU layers
-    contextSize: 8192, // Size of the context
+    contextSize: 2048, // Size of the context
     threads: 12, // Number of threads to use
     temperature: 0.6, // Temperature for randomness in responses
     seed: 3407, // Seed for random number generation
