@@ -32,7 +32,7 @@ if (!fs.existsSync(process.env.MODEL_FILE)) {
   const model = new LlamaModel({
     modelPath: process.env.MODEL_FILE, // Path to the model file
     gpuLayers: parseInt(process.env.NGL, 10), // Number of GPU layers
-    contextSize: 2048, // Size of the context
+    contextSize: 4096, // Size of the context
     threads: 12, // Number of threads to use
     temperature: 0.6, // Temperature for randomness in responses
     seed: 3407, // Seed for random number generation
@@ -91,7 +91,7 @@ if (!fs.existsSync(process.env.MODEL_FILE)) {
     // Query the collection for relevant documents
     const results = await collection.query({
       queryEmbeddings: [queryEmbedding.data],
-      nResults: 10, // Number of results to return
+      nResults: 5, // Number of results to return
     });
     console.debug("Context retrieved:", results.documents); // Log retrieved documents
     return results.documents.flat().join("\n"); // Return the documents as a single string
@@ -116,6 +116,8 @@ if (!fs.existsSync(process.env.MODEL_FILE)) {
 
   // Function to generate API response based on incoming data
   const getApiResponse = async (data, cb) => {
+    let context = null;
+    let session = null;
     try {
       console.debug("Generating API response for data:", data); // Log the data being processed
 
@@ -126,8 +128,8 @@ if (!fs.existsSync(process.env.MODEL_FILE)) {
       // Create an augmented prompt with context and user prompt
       const augmentedPrompt = `Context:\n${retrievedContext}\n\nUser Prompt:\n${data.prompt}`;
 
-      const context = new LlamaContext({ model }); // Create a new context for the model
-      const session = new LlamaChatSession({ context }); // Create a new chat session
+      context = new LlamaContext({ model }); // Create a new context for the model
+      session = new LlamaChatSession({ context }); // Create a new chat session
 
       const startTime = Date.now(); // Start time for performance measurement
       let tokenLength = 0; // Initialize token length counter
@@ -202,12 +204,24 @@ if (!fs.existsSync(process.env.MODEL_FILE)) {
         `response-${Date.now()}`
       );
       console.debug("Model response stored successfully."); // Log successful storage of model response
-
-      // Free up GPU memory after completion
-      context.free();
-      console.debug("Freed Llama context and session to release GPU memory.");
+      if (global.gc) {
+        global.gc(); // Manually trigger garbage collection
+        console.debug("Freed Llama context and session to release GPU memory.");
+      } else {
+        console.log("Garbage collection is not available.");
+      }
     } catch (e) {
       console.error("Error in getApiResponse:", e); // Log any errors that occur
+      process.exit(0);
+    } finally {
+      // Free up GPU memory
+      if (session) {
+        session.free(); // Free the session
+      }
+      if (context) {
+        context.free(); // Free the context
+      }
+      console.debug("Freed Llama context and session to release GPU memory.");
     }
   };
 }
