@@ -204,7 +204,6 @@ if (!fs.existsSync(process.env.MODEL_FILE)) {
       console.debug("Model response stored successfully."); // Log successful storage of model response
 
       // Free up GPU memory after completion
-      session.free();
       context.free();
       console.debug("Freed Llama context and session to release GPU memory.");
     } catch (e) {
