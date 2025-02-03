@@ -17,7 +17,7 @@ const embedder = await pipeline(
 // Creating a new Chroma client for knowledge base management
 const chroma = new ChromaClient();
 const collection = await chroma.getOrCreateCollection({
-  name: "knowledge_base", // Name of the knowledge base collection
+  name: process.env.CHROMA_COLLECTION, // Name of the knowledge base collection
 });
 
 // Checking if the model file exists
