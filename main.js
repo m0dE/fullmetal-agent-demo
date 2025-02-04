@@ -50,15 +50,18 @@ if (!fs.existsSync(process.env.MODEL_FILE)) {
 
     let summary = ""; // Initialize summary variable
     // Prompt the model to summarize the text
-    await session.prompt(`Summarize this knowledge concisely:\n\n${text}`, {
-      stop: ["<｜User｜>", "<｜End｜>", "User:", "Assistant:"], // Stop tokens for the prompt
-      onToken(chunk) {
-        summary += context.decode(chunk); // Decode and append each chunk to the summary
-      },
-    });
-    console.debug("Summary before trimming:", summary); // Debug log before trimming
+    await session.prompt(
+      `Please provide a concise summary of the following knowledge:\n\n${text}`,
+      {
+        stop: ["<｜User｜>", "<｜End｜>", "User:", "Assistant:"], // Stop tokens for the prompt
+        onToken(chunk) {
+          summary += context.decode(chunk); // Decode and append each chunk to the summary
+        },
+      }
+    );
+    console.debug("Summary before trimming"); // Debug log before trimming
     console.log(summary.trim());
-    console.debug("Summary after trimming:", summary.trim()); // Debug log after trimming
+    console.debug("Summary after trimming"); // Debug log after trimming
     return summary.trim(); // Return the trimmed summary
   };
 
