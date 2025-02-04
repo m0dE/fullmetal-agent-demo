@@ -43,6 +43,25 @@ if (!fs.existsSync(process.env.MODEL_FILE)) {
     });
   });
 
+  // Function to summarize retrieved context to reduce token usage
+  const summarizeText = async (text) => {
+    const context = new LlamaContext({ model }); // Create a new context for the model
+    const session = new LlamaChatSession({ context }); // Create a new chat session
+
+    let summary = ""; // Initialize summary variable
+    // Prompt the model to summarize the text
+    await session.prompt(`Summarize this knowledge concisely:\n\n${text}`, {
+      stop: ["<｜User｜>", "<｜End｜>", "User:", "Assistant:"], // Stop tokens for the prompt
+      onToken(chunk) {
+        summary += context.decode(chunk); // Decode and append each chunk to the summary
+      },
+    });
+    console.debug("Summary before trimming:", summary); // Debug log before trimming
+    console.log(summary.trim());
+    console.debug("Summary after trimming:", summary.trim()); // Debug log after trimming
+    return summary.trim(); // Return the trimmed summary
+  };
+
   // Function to get API response
   const getApiResponse = async (data, cb) => {
     let context = null;
@@ -52,8 +71,13 @@ if (!fs.existsSync(process.env.MODEL_FILE)) {
       session = new LlamaChatSession({ context }); // Creating a new chat session
       const startTime = Date.now(); // Start time for performance measurement
       let tokenLength = 0; // Initialize token length counter
+
+      let retrievedContext = await summarizeText(data.prompt); // Summarize before passing to model
+      // Create an augmented prompt with context and user prompt
+      const promptWithContext = `Context:\n${retrievedContext}\n\nUser Prompt:\n${data.prompt}`;
+
       let userPrompt = modelTemplate
-        .replace("{prompt}", data.prompt) // Replace prompt in the template
+        .replace("{prompt}", promptWithContext) // Replace prompt in the template
         .replace("{system_prompt}", data.options.sysPrompt); // Replace system prompt in the template
       let responseMessage = ""; // Initialize response message variable
       // Sending the prompt to the session
