@@ -73,26 +73,30 @@ if (!fs.existsSync(process.env.MODEL_FILE)) {
 
   // Function to get API response
   const getApiResponse = async (data, cb) => {
-    let context = null;
-    let session = null;
     try {
-      context = new LlamaContext({ model }); // Creating a new Llama context
-      session = new LlamaChatSession({ context }); // Creating a new chat session
+      let context = new LlamaContext({ model }); // Creating a new Llama context
+      let session = new LlamaChatSession({ context }); // Creating a new chat session
+
       const startTime = Date.now(); // Start time for performance measurement
       let tokenLength = 0; // Initialize token length counter
+
       const input = {
         preprompt: data.options?.body?.preprompt,
         prompt: data.prompt,
         summary: data.options?.body?.summary,
+        sysPrompt: data.options?.sysPrompt,
       };
       let retrievedContext = await summarizeText(context, session, input); // Summarize before passing to model
+
       // Create an augmented prompt with context and user prompt
-      const promptWithContext = `Context:\n${retrievedContext}\n\nUser Prompt:${input.preprompt}\n${data.prompt}`;
-      // retrievedContext = `${input.preprompt}\n\n${input.summary}\n\n${input.prompt}`;
+      const promptWithContext = `Context:\n${retrievedContext}\n\nUser Prompt:${input.preprompt}\n${input.prompt}`;
+
       let userPrompt = modelTemplate
         .replace("{prompt}", promptWithContext) // Replace prompt in the template
-        .replace("{system_prompt}", data.options.sysPrompt); // Replace system prompt in the template
+        .replace("{system_prompt}", input?.sysPrompt); // Replace system prompt in the template
+
       let responseMessage = ""; // Initialize response message variable
+
       // Sending the prompt to the session
       console.log("[DEBUG]: User Prompt", userPrompt);
       await session.prompt(`${userPrompt}`, {
@@ -124,6 +128,7 @@ if (!fs.existsSync(process.env.MODEL_FILE)) {
 
       console.log("Cleaned response message:", cleanedResponseMessage); // Log cleaned response message
       console.log("Think content:", thinkContent); // Log think content
+
       // Callback with the response data
       cb({
         token: cleanedResponseMessage,
