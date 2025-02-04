@@ -1,70 +1,112 @@
-import { LlamaModel, LlamaContext, LlamaChatSession } from 'node-llama-cpp';
-import Fullmetal from 'fullmetal-agent';
-import fs from 'fs';
-import 'dotenv/config';
+import { LlamaModel, LlamaContext, LlamaChatSession } from "node-llama-cpp"; // Importing Llama model and context classes
+import Fullmetal from "fullmetal-agent"; // Importing Fullmetal agent for handling prompts
+import fs from "fs"; // Importing file system module for file operations
+import "dotenv/config"; // Loading environment variables from .env file
 
-const modelTemplate = `${process.env.MODEL_TEMPLATE}`;
+const modelTemplate = `${process.env.MODEL_TEMPLATE}`; // Template for the model prompt
 
+// Check if the model file exists
 if (!fs.existsSync(process.env.MODEL_FILE)) {
-  console.log(`${process.env.MODEL_FILE} does not exist`);
+  console.log(`${process.env.MODEL_FILE} does not exist`); // Log if the model file does not exist
 } else {
-  console.log(`${process.env.MODEL_FILE} exists`);
+  console.log(`${process.env.MODEL_FILE} exists`); // Log if the model file exists
 
+  // Initializing the Llama model with configuration
   const model = new LlamaModel({
-    modelPath: process.env.MODEL_FILE,
-    gpuLayers: parseInt(process.env.NGL),
+    modelPath: process.env.MODEL_FILE, // Path to the model file
+    gpuLayers: parseInt(process.env.NGL, 10), // Number of GPU layers
+    contextSize: 4096, // Size of the context
+    threads: 12, // Number of threads to use
+    temperature: 0.6, // Temperature for randomness in responses
+    seed: 3407, // Seed for random number generation
   });
 
+  // Configuration for the Fullmetal agent
   const fullMetalConfig = {
-    name: process.env.AGENT_NAME,
-    apiKey: process.env.FULLMETAL_API_KEY,
-    models: [process.env.MODEL_NAME],
-    isPublic: true,
+    name: process.env.AGENT_NAME, // Name of the agent
+    apiKey: process.env.FULLMETAL_API_KEY, // API key for Fullmetal
+    models: [process.env.MODEL_NAME], // Models to be used by the agent
+    isPublic: true, // Whether the agent is public
+    restartOnDisconnect: true, // Restart the agent on disconnect
   };
 
+  // Creating a new Fullmetal agent instance
   const fullmetalAgent = new Fullmetal(fullMetalConfig);
+  console.debug("Fullmetal agent created with config:", fullMetalConfig); // Debug log for agent configuration
+
+  // Handling incoming prompts
   fullmetalAgent.onPrompt(async (data) => {
+    console.debug("Received prompt data:", data); // Log received prompt data
     await getApiResponse(data, async (response) => {
       // response= {token:'', completed:false, speed:10, model:''Wizard-Vicuna-7B-Uncensored'}
-      fullmetalAgent.sendResponse(response);
+      fullmetalAgent.sendResponse(response); // Send the response back to the agent
     });
   });
 
+  // Function to get API response
   const getApiResponse = async (data, cb) => {
+    let context = null;
+    let session = null;
     try {
-      const context = new LlamaContext({ model });
-      const session = new LlamaChatSession({ context });
-      const startTime = Date.now();
-      let tokenLength = 0;
+      context = new LlamaContext({ model }); // Creating a new Llama context
+      session = new LlamaChatSession({ context }); // Creating a new chat session
+      const startTime = Date.now(); // Start time for performance measurement
+      let tokenLength = 0; // Initialize token length counter
       let userPrompt = modelTemplate
-        .replace('{prompt}', data.prompt)
-        .replace('{system_prompt}', data.options.sysPrompt);
+        .replace("{prompt}", data.prompt) // Replace prompt in the template
+        .replace("{system_prompt}", data.options.sysPrompt); // Replace system prompt in the template
+      let responseMessage = ""; // Initialize response message variable
+      // Sending the prompt to the session
       await session.prompt(`${userPrompt}`, {
         onToken(chunk) {
-          tokenLength += chunk.length;
-          cb({ token: context.decode(chunk) });
+          tokenLength += chunk.length; // Update token length
+          responseMessage += context.decode(chunk); // Decode and append each chunk to the response message
         },
       });
-      const endTime = Date.now();
+
+      const endTime = Date.now(); // End time for performance measurement
       // Calculate the elapsed time in seconds
       const elapsedTimeInSeconds = (endTime - startTime) / 1000;
-      const tokensPerSecond = tokenLength / elapsedTimeInSeconds;
+      const tokensPerSecond = tokenLength / elapsedTimeInSeconds; // Calculate tokens per second
 
+      let cleanedResponseMessage, thinkContent; // Initialize variables for cleaned response and think content
+
+      // Check if the response contains think content
+      if (responseMessage.includes("</think>")) {
+        thinkContent = responseMessage.split(/<\/think>/)[0]; // Extract think content
+        cleanedResponseMessage = responseMessage.split(/<\/think>/)[1]; // Extract cleaned response
+      } else {
+        cleanedResponseMessage = responseMessage; // No think content, use full response
+        thinkContent = ""; // No think content
+      }
+
+      // Clean up the response message
+      cleanedResponseMessage = cleanedResponseMessage.replace(/undefined/g, "");
+      thinkContent = thinkContent.replace(/undefined/g, "");
+
+      console.log("Cleaned response message:", cleanedResponseMessage); // Log cleaned response message
+      console.log("Think content:", thinkContent); // Log think content
+      // Callback with the response data
       cb({
-        token: null,
+        token: cleanedResponseMessage,
+        reasoning: thinkContent,
         completed: true,
         model: process.env.MODEL_NAME,
-        elapsedTime: elapsedTimeInSeconds.toFixed(2),
-        speed: tokensPerSecond.toFixed(2),
-        promptLength: data.prompt.length,
-        responseLength: tokenLength,
+        elapsedTime: elapsedTimeInSeconds.toFixed(2), // Elapsed time in seconds
+        speed: tokensPerSecond.toFixed(2), // Speed in tokens per second
+        promptLength: data.prompt.length, // Length of the user prompt
+        responseLength: tokenLength, // Length of the response
       });
 
-      console.log(`nGPU: ${process.env.NGL}`);
-      console.log(`Total time taken: ${elapsedTimeInSeconds}`);
-      console.log(`Tokens Per Second: ${tokensPerSecond.toFixed(2)}`);
+      // Trigger garbage collection if available
+      if (global.gc) {
+        global.gc(); // Manually trigger garbage collection
+        console.debug("Freed Llama context and session to release GPU memory."); // Debug log for garbage collection
+      } else {
+        console.log("Garbage collection is not available."); // Log if garbage collection is not available
+      }
     } catch (e) {
-      console.log(e);
+      console.error("Error in getApiResponse:", e); // Log any errors that occur
     }
   };
 }
