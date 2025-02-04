@@ -44,21 +44,27 @@ if (!fs.existsSync(process.env.MODEL_FILE)) {
   });
 
   // Function to summarize retrieved context to reduce token usage
-  const summarizeText = async (text) => {
-    const context = new LlamaContext({ model }); // Create a new context for the model
-    const session = new LlamaChatSession({ context }); // Create a new chat session
+  const summarizeText = async (context, session, data) => {
+    // const context = new LlamaContext({ model }); // Create a new context for the model
+    // const session = new LlamaChatSession({ context }); // Create a new chat session
 
     let summary = ""; // Initialize summary variable
     // Prompt the model to summarize the text
-    await session.prompt(
-      `Extract all key points and summarize concisely while retaining essential details:\n\n${text}`,
-      {
-        stop: ["<｜User｜>", "<｜End｜>", "User:", "Assistant:"], // Stop tokens for the prompt
-        onToken(chunk) {
-          summary += context.decode(chunk); // Decode and append each chunk to the summary
-        },
-      }
-    );
+    const p = `Summarize the knowledge concisely using the following information:
+    ${data.summary ? `Summary: ${data.summary}` : ``}
+    ${data.prompt}`;
+
+    console.error(p);
+    await session.prompt(p, {
+      stop: ["<｜User｜>", "<｜End｜>", "User:", "Assistant:"], // Stop tokens for the prompt
+      onToken(chunk) {
+        summary += context.decode(chunk); // Decode and append each chunk to the summary
+      },
+    });
+    // Check if the response contains think content
+    if (summary.includes("</think>")) {
+      summary = summary.split(/<\/think>/)[1]; // Extract cleaned response
+    }
     console.debug("Summary before trimming"); // Debug log before trimming
     console.log(summary.trim());
     console.debug("Summary after trimming"); // Debug log after trimming
@@ -74,16 +80,21 @@ if (!fs.existsSync(process.env.MODEL_FILE)) {
       session = new LlamaChatSession({ context }); // Creating a new chat session
       const startTime = Date.now(); // Start time for performance measurement
       let tokenLength = 0; // Initialize token length counter
-
-      let retrievedContext = await summarizeText(data.prompt); // Summarize before passing to model
+      const input = {
+        preprompt: data.options?.body?.preprompt,
+        prompt: data.prompt,
+        summary: data.options?.body?.summary,
+      };
+      let retrievedContext = await summarizeText(context, session, input); // Summarize before passing to model
       // Create an augmented prompt with context and user prompt
-      const promptWithContext = `Context:\n${retrievedContext}\n\nUser Prompt:\n${data.prompt}`;
-
+      const promptWithContext = `Context:\n${retrievedContext}\n\nUser Prompt:${input.preprompt}\n${data.prompt}`;
+      // retrievedContext = `${input.preprompt}\n\n${input.summary}\n\n${input.prompt}`;
       let userPrompt = modelTemplate
         .replace("{prompt}", promptWithContext) // Replace prompt in the template
         .replace("{system_prompt}", data.options.sysPrompt); // Replace system prompt in the template
       let responseMessage = ""; // Initialize response message variable
       // Sending the prompt to the session
+      console.log("[DEBUG]: User Prompt", userPrompt);
       await session.prompt(`${userPrompt}`, {
         onToken(chunk) {
           tokenLength += chunk.length; // Update token length
@@ -117,6 +128,7 @@ if (!fs.existsSync(process.env.MODEL_FILE)) {
       cb({
         token: cleanedResponseMessage,
         reasoning: thinkContent,
+        summarizedText: retrievedContext,
         completed: true,
         model: process.env.MODEL_NAME,
         elapsedTime: elapsedTimeInSeconds.toFixed(2), // Elapsed time in seconds
