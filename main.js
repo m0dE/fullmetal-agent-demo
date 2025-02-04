@@ -43,6 +43,11 @@ if (!fs.existsSync(process.env.MODEL_FILE)) {
     });
   });
 
+  fullmetalAgent.socket.on("disconnect", async (reason) => {
+    console.log("Disconnected", reason);
+    process.exit(0);
+  });
+
   // Function to summarize retrieved context to reduce token usage
   const summarizeText = async (context, session, data) => {
     // const context = new LlamaContext({ model }); // Create a new context for the model
