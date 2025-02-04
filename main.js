@@ -51,7 +51,7 @@ if (!fs.existsSync(process.env.MODEL_FILE)) {
     let summary = ""; // Initialize summary variable
     // Prompt the model to summarize the text
     await session.prompt(
-      `Please provide a concise summary of the following knowledge:\n\n${text}`,
+      `Extract all key points and summarize concisely while retaining essential details:\n\n${text}`,
       {
         stop: ["<｜User｜>", "<｜End｜>", "User:", "Assistant:"], // Stop tokens for the prompt
         onToken(chunk) {
